@@ -120,12 +120,11 @@ public class Watermark {
         for (int i = 0; i < this.watermarkHeight; i++) {
             for (int j = 0; j < this.watermarkWidth; j++) {
                 for (int k = 0; k < 8; k++) {
-                    if(originalBits[i][j][k] == 1 || watermarkBits[i][j][k] ==1) {
+                    if(originalBits[i][j][k] == 1 || watermarkBits[i][j][k] == 1) {
                         originalBits[i][j][k] = 1;
-                    } else {
-                        originalBits[i][j][k] = 0;
-                    }
-
+                    }  else {
+                            originalBits[i][j][k] = 0;
+                        }
                 }
             }
         }
@@ -152,5 +151,28 @@ public class Watermark {
             }
         }
         return (new ImagePlus("Vlozeny watermark",bImage));
+    }
+
+    public ImagePlus extractWatermarkFromImage(int h) {
+        var extractedBits = new int[watermarkImage.getHeight()][watermarkImage.getWidth()];
+        for (int i = 0; i < this.watermarkHeight; i++) {
+            for (int j = 0; j < this.watermarkWidth; j++) {
+                var value = originalBits[i][j][h];
+                    if(value == 0) {
+                        extractedBits[i][j] = 0;
+                    } else {
+                        extractedBits[i][j] = 255;
+                    }
+            }
+        }
+        BufferedImage bImage = new BufferedImage(watermarkImage.getWidth(), watermarkImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+        int [][] rgb = new int [watermarkImage.getHeight()][watermarkImage.getWidth()];
+        for (int i = 0; i < watermarkImage.getHeight(); i++) {
+            for (int j = 0; j < watermarkImage.getWidth(); j++) {
+                rgb[i][j] = new Color(extractedBits[i][j], extractedBits[i][j], extractedBits[i][j]).getRGB();
+                bImage.setRGB(j, i, rgb[i][j]);
+            }
+        }
+        return (new ImagePlus("Extraktovany vodoznak",bImage));
     }
 }
