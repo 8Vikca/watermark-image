@@ -17,19 +17,26 @@ public class MainWindow {
         frame.pack();
         frame.setVisible(true);
     }
-
         public MainWindow() {
             initialize();
         }
 
 
     private void initialize () {
-        BufferedImage originalImage = new ImagePlus("Lenna(testImage).png").getBufferedImage();
-        BufferedImage watermarkImage = new ImagePlus("watermark.png").getBufferedImage();
-        //originalImage.show();
-        Watermark watermark = new Watermark();
-        watermark.setOriginalBites(watermark.getRGBinBits(originalImage));
-        watermark.setWatermarkBites(watermark.getRGBinBits(watermarkImage));
+        ImagePlus originalImage = new ImagePlus("Lenna(testImage).png");
+        ImagePlus watermarkImage = new ImagePlus("watermark.png");
+        originalImage.show();
+        int h= 4;
+        Watermark watermark = new Watermark(originalImage.getBufferedImage(), watermarkImage.getBufferedImage());
+        watermark.setOriginalBits(watermark.bitsPreparationOrig(h));
+        watermark.setWatermarkBits(watermark.bitsPreparationMark(h));
+
+        watermark.insertWatermarkInImage();
+        var originalWithWatermark = watermark.setImageFromBits();
+        originalWithWatermark.show();
+
+
+
 
     }
 }
