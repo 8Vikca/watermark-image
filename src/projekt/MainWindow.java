@@ -12,10 +12,12 @@ public class MainWindow {
 
     private JPanel mainPanel;
     private JButton chooseImage;
-    private JButton button2;
     private JButton extract;
-    private JTextField level;
     private JButton applyMethod1;
+    private JSlider sliderH;
+    private JRadioButton modráRadioButton1;
+    private JRadioButton zelenáRadioButton;
+    private JRadioButton červenáRadioButton;
 
     final File[] fileToSend = new File[1];
     private ImagePlus originalWithWatermark;
@@ -32,6 +34,13 @@ public class MainWindow {
         frame.setVisible(true);
     }
         public MainWindow() {
+            ButtonGroup group = new ButtonGroup();
+            group.add(modráRadioButton1);
+            group.add(zelenáRadioButton);
+            group.add(červenáRadioButton);
+            this.červenáRadioButton.setActionCommand("red");
+            this.zelenáRadioButton.setActionCommand("green");
+            this.modráRadioButton1.setActionCommand("blue");
             chooseImage.addActionListener(new ActionListener() {
 
                 @Override
@@ -52,7 +61,8 @@ public class MainWindow {
             applyMethod1.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    initializeWatermarking();
+                    String selection = group.getSelection().getActionCommand();
+                    initializeWatermarking(selection);
                 }
             });
             extract.addActionListener(new ActionListener() {
@@ -64,11 +74,11 @@ public class MainWindow {
         }
 
 
-    private void initializeWatermarking () {
+    private void initializeWatermarking (String selection) {
         ImagePlus originalImage = new ImagePlus(fileToSend[0].getAbsolutePath());
         ImagePlus watermarkImage = new ImagePlus("watermark.png");
-        h= Integer.parseInt(level.getText());
-        watermark = new Watermark(originalImage.getBufferedImage(), watermarkImage.getBufferedImage());
+        h= sliderH.getValue();
+        watermark = new Watermark(originalImage.getBufferedImage(), watermarkImage.getBufferedImage(), selection);
         watermark.setOriginalBits(watermark.bitsPreparationOrig(h));
         watermark.setWatermarkBits(watermark.bitsPreparationMark(h));
         watermark.insertWatermarkInImage();

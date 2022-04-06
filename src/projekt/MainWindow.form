@@ -8,22 +8,6 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="a8a3a" class="javax.swing.JButton" binding="button2" default-binding="true">
-        <constraints>
-          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Button"/>
-        </properties>
-      </component>
-      <component id="1d54b" class="javax.swing.JButton" binding="extract">
-        <constraints>
-          <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="extraktovať vodoznak"/>
-        </properties>
-      </component>
       <component id="7144b" class="javax.swing.JLabel">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -35,21 +19,10 @@
       </component>
       <component id="d46c3" class="javax.swing.JLabel">
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="0" row-span="2" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <text value="Hĺbka vkladania"/>
-        </properties>
-      </component>
-      <component id="874c" class="javax.swing.JTextField" binding="level">
-        <constraints>
-          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <text value="0"/>
-          <toolTipText value="(0-MSB, 7-LSB)"/>
         </properties>
       </component>
       <component id="c858c" class="javax.swing.JButton" binding="chooseImage">
@@ -57,7 +30,27 @@
           <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="zvoliť obrázok"/>
+          <text value="Zvoliť obrázok"/>
+        </properties>
+      </component>
+      <component id="7fa5b" class="javax.swing.JSlider" binding="sliderH">
+        <constraints>
+          <grid row="1" column="1" row-span="2" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="200" height="125"/>
+          </grid>
+        </constraints>
+        <properties>
+          <maximum value="7"/>
+          <toolTipText value="MSB &lt;===&gt; LSB"/>
+          <value value="0"/>
+        </properties>
+      </component>
+      <component id="1d54b" class="javax.swing.JButton" binding="extract">
+        <constraints>
+          <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Extraktovať vodoznak"/>
         </properties>
       </component>
       <component id="c6007" class="javax.swing.JButton" binding="applyMethod1">
@@ -65,7 +58,31 @@
           <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="vložiť vodoznak"/>
+          <text value="Vložiť vodoznak"/>
+        </properties>
+      </component>
+      <component id="16c01" class="javax.swing.JRadioButton" binding="červenáRadioButton" default-binding="true">
+        <constraints>
+          <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Červená"/>
+        </properties>
+      </component>
+      <component id="9588c" class="javax.swing.JRadioButton" binding="zelenáRadioButton" default-binding="true">
+        <constraints>
+          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Zelená"/>
+        </properties>
+      </component>
+      <component id="7a7a4" class="javax.swing.JRadioButton" binding="modráRadioButton1" default-binding="true">
+        <constraints>
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Modrá"/>
         </properties>
       </component>
     </children>

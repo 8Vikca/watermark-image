@@ -23,6 +23,8 @@ public class Watermark {
     private int[][] green;
     private int[][] blue;
 
+    private String RGBcomponent;
+
     public static final int BLACK = 0;
     public static final int WHITE = 1;
 
@@ -43,14 +45,14 @@ public class Watermark {
         this.watermarkBits = watermarkBites;
     }
 
-    public Watermark(BufferedImage originalImage, BufferedImage watermarkImage) {
+    public Watermark(BufferedImage originalImage, BufferedImage watermarkImage, String selection) {
         this.originalImage = originalImage;
         this.watermarkImage = watermarkImage;
         this.imageHeight = originalImage.getHeight();
         this.imageWidth = originalImage.getWidth();
         this.watermarkHeight = watermarkImage.getHeight();
         this.watermarkWidth = watermarkImage.getWidth();
-
+        this.RGBcomponent = selection;
     }
 
     public int[][][] bitsPreparationOrig (int h) {
@@ -65,7 +67,19 @@ public class Watermark {
                 this.red[i][j] = colorModel.getRed(this.originalImage.getRGB(j, i)); //0-255
                 this.green[i][j] = colorModel.getGreen(this.originalImage.getRGB(j, i));
                 this.blue[i][j] = colorModel.getBlue(this.originalImage.getRGB(j, i));
-                var decimaltoBinary = Integer.toBinaryString(red[i][j]); //kazde cislo vyjadrit pomocou 8mich bitov
+                String decimaltoBinary;
+                switch (this.RGBcomponent) {
+                    //kazde cislo vyjadrit pomocou 8mich bitov
+                    case "green":
+                        decimaltoBinary = Integer.toBinaryString(green[i][j]);
+                        break;
+                    case "blue":
+                        decimaltoBinary = Integer.toBinaryString(blue[i][j]);
+                        break;
+                    default:
+                        decimaltoBinary = Integer.toBinaryString(red[i][j]);
+                        break;
+                }
                 if(decimaltoBinary.length() != 8) {                 //ak chybaju na zaciatku nuly
                     int binaryLength = decimaltoBinary.length();
                     for (int u = binaryLength; u < 8; u++) {
@@ -138,7 +152,18 @@ public class Watermark {
                 for(int k = 0; k < 8; k++) {
                     binaryToDecimal = binaryToDecimal + originalBits[i][j][k];
                 }
-                this.red[i][j] = Integer.parseInt(binaryToDecimal,2);
+                switch (this.RGBcomponent) {
+                    //kazde cislo vyjadrit pomocou 8mich bitov
+                    case "green":
+                        this.green[i][j] = Integer.parseInt(binaryToDecimal,2);
+                        break;
+                    case "blue":
+                        this.blue[i][j] = Integer.parseInt(binaryToDecimal,2);
+                        break;
+                    default:
+                        this.red[i][j] = Integer.parseInt(binaryToDecimal,2);
+                        break;
+                }
             }
         }
 
