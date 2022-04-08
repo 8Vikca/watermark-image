@@ -4,9 +4,8 @@ import ij.ImagePlus;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 
-public class Watermark {
+public class WatermarkLSB {
 
     public int [][][] originalBits;
     public int [][][] watermarkBits;
@@ -45,7 +44,7 @@ public class Watermark {
         this.watermarkBits = watermarkBites;
     }
 
-    public Watermark(BufferedImage originalImage, BufferedImage watermarkImage, String selection) {
+    public WatermarkLSB(BufferedImage originalImage, BufferedImage watermarkImage, String selection) {
         this.originalImage = originalImage;
         this.watermarkImage = watermarkImage;
         this.imageHeight = originalImage.getHeight();

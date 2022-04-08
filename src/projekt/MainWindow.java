@@ -1,5 +1,7 @@
 package projekt;
 
+import Jama.Matrix;
+import cv5.TransformMatrix;
 import ij.ImagePlus;
 
 import javax.swing.*;
@@ -18,10 +20,11 @@ public class MainWindow {
     private JRadioButton modráRadioButton1;
     private JRadioButton zelenáRadioButton;
     private JRadioButton červenáRadioButton;
+    private JButton DCT;
 
     final File[] fileToSend = new File[1];
     private ImagePlus originalWithWatermark;
-    private Watermark watermark;
+    private WatermarkLSB watermark;
     private int h;
 
 
@@ -62,7 +65,7 @@ public class MainWindow {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     String selection = group.getSelection().getActionCommand();
-                    initializeWatermarking(selection);
+                    initializeWatermarkingLSB(selection);
                 }
             });
             extract.addActionListener(new ActionListener() {
@@ -71,14 +74,29 @@ public class MainWindow {
                     initializeExtraction();
                 }
             });
+            DCT.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int blockSize = 8;
+
+                    //if (a2x2RadioButton.isSelected()) blockSize = 2;
+                    //if (a4x4RadioButton.isSelected()) blockSize = 4;
+                    //if (a8x8RadioButton.isSelected()) blockSize = 8;
+
+                    Matrix tMat = new TransformMatrix().getDctMatrix(blockSize);
+                    ImagePlus originalImage = new ImagePlus(fileToSend[0].getAbsolutePath());
+                    WatermarkDCT watermarkDCT = new WatermarkDCT(originalImage);
+                    //process.transform(blockSize, tMat, Quantization.getValue());
+                }
+            });
         }
 
 
-    private void initializeWatermarking (String selection) {
+    private void initializeWatermarkingLSB (String selection) {
         ImagePlus originalImage = new ImagePlus(fileToSend[0].getAbsolutePath());
         ImagePlus watermarkImage = new ImagePlus("watermark.png");
         h= sliderH.getValue();
-        watermark = new Watermark(originalImage.getBufferedImage(), watermarkImage.getBufferedImage(), selection);
+        watermark = new WatermarkLSB(originalImage.getBufferedImage(), watermarkImage.getBufferedImage(), selection);
         watermark.setOriginalBits(watermark.bitsPreparationOrig(h));
         watermark.setWatermarkBits(watermark.bitsPreparationMark(h));
         watermark.insertWatermarkInImage();
@@ -90,6 +108,10 @@ public class MainWindow {
     private void initializeExtraction() {
         var extractedImage = this.watermark.extractWatermarkFromImage(h);
         extractedImage.show();
+    }
+
+    private void initializeWatermarkingDCT() {
+
     }
 }
 
