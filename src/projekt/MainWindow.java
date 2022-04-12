@@ -1,7 +1,6 @@
 package projekt;
 
 import Jama.Matrix;
-import cv5.TransformMatrix;
 import ij.ImagePlus;
 
 import javax.swing.*;
@@ -21,6 +20,10 @@ public class MainWindow {
     private JRadioButton zelenáRadioButton;
     private JRadioButton červenáRadioButton;
     private JButton DCT;
+    private JButton mirroringButton;
+    private JButton deMirroringButton;
+    private JButton extraktovaťVodoznakButton1;
+    private JButton button2;
 
     final File[] fileToSend = new File[1];
     private ImagePlus originalWithWatermark;
@@ -89,6 +92,18 @@ public class MainWindow {
                     //process.transform(blockSize, tMat, Quantization.getValue());
                 }
             });
+            mirroringButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    initializeMirroring();
+                }
+            });
+            deMirroringButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    revertMirroring();
+                }
+            });
         }
 
 
@@ -112,6 +127,18 @@ public class MainWindow {
 
     private void initializeWatermarkingDCT() {
 
+    }
+
+    private void initializeMirroring () {
+        var image =watermark.mirrorImage();
+        image.show();
+        watermark.setMirroredImage(image.getBufferedImage());
+    }
+    private void revertMirroring () {
+        var image =watermark.mirrorImage();
+        watermark.setWatermarkImage(image.getBufferedImage());
+        var extractedImage = watermark.extractWatermarkFromImage(h);
+        extractedImage.show();
     }
 }
 

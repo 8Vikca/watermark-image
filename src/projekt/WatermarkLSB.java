@@ -9,6 +9,7 @@ public class WatermarkLSB {
 
     public int [][][] originalBits;
     public int [][][] watermarkBits;
+    public int [][][] origWithWatermarkBits;
     private int imageHeight;
     private int imageWidth;
 
@@ -17,6 +18,17 @@ public class WatermarkLSB {
 
     private BufferedImage originalImage;
     private BufferedImage watermarkImage;
+    private BufferedImage origWithWatermarkImage;
+
+    public BufferedImage getMirroredImage() {
+        return mirroredImage;
+    }
+
+    public void setMirroredImage(BufferedImage mirroredImage) {
+        this.mirroredImage = mirroredImage;
+    }
+
+    private BufferedImage mirroredImage;
 
     private int[][] red;
     private int[][] green;
@@ -126,17 +138,25 @@ public class WatermarkLSB {
         return color;
     }
 
+    public int[][][] getOrigWithWatermarkBits() {
+        return origWithWatermarkBits;
+    }
+
+    public void setOrigWithWatermarkBits(int[][][] origWithWatermarkBits) {
+        this.origWithWatermarkBits = origWithWatermarkBits;
+    }
+
     public void insertWatermarkInImage() {
-        var originalBits = this.getOriginalBits();
+        origWithWatermarkBits = this.getOriginalBits();
         var watermarkBits = this.getWatermarkBits();
 
         for (int i = 0; i < this.watermarkHeight; i++) {
             for (int j = 0; j < this.watermarkWidth; j++) {
                 for (int k = 0; k < 8; k++) {
-                    if(originalBits[i][j][k] == 1 || watermarkBits[i][j][k] == 1) {
-                        originalBits[i][j][k] = 1;
+                    if(origWithWatermarkBits[i][j][k] == 1 || watermarkBits[i][j][k] == 1) {
+                        origWithWatermarkBits[i][j][k] = 1;
                     }  else {
-                            originalBits[i][j][k] = 0;
+                        origWithWatermarkBits[i][j][k] = 0;
                         }
                 }
             }
@@ -166,19 +186,28 @@ public class WatermarkLSB {
             }
         }
 
-        BufferedImage bImage = new BufferedImage(this.imageWidth, this.imageHeight, BufferedImage.TYPE_INT_RGB);
+        origWithWatermarkImage = new BufferedImage(this.imageWidth, this.imageHeight, BufferedImage.TYPE_INT_RGB);
         int [][] rgb = new int [this.imageHeight][this.imageWidth];
         for (int i = 0; i < this.imageHeight; i++) {
             for (int j = 0; j < this.imageWidth; j++) {
                 rgb[i][j] = new Color(this.red[i][j], this.green[i][j], this.blue[i][j]).getRGB();
-                bImage.setRGB(j, i, rgb[i][j]);
+                origWithWatermarkImage.setRGB(j, i, rgb[i][j]);
             }
         }
-        return (new ImagePlus("Vlozeny watermark",bImage));
+        return (new ImagePlus("Vlozeny watermark",origWithWatermarkImage));
+    }
+
+    public BufferedImage getWatermarkImage() {
+        return watermarkImage;
+    }
+
+    public void setWatermarkImage(BufferedImage watermarkImage) {
+        this.watermarkImage = watermarkImage;
     }
 
     public ImagePlus extractWatermarkFromImage(int h) {
-        var extractedBits = new int[watermarkImage.getHeight()][watermarkImage.getWidth()];
+
+        var extractedBits = new int[watermarkHeight][watermarkWidth];
         for (int i = 0; i < this.watermarkHeight; i++) {
             for (int j = 0; j < this.watermarkWidth; j++) {
                 var value = originalBits[i][j][h];
@@ -189,14 +218,31 @@ public class WatermarkLSB {
                     }
             }
         }
-        BufferedImage bImage = new BufferedImage(watermarkImage.getWidth(), watermarkImage.getHeight(), BufferedImage.TYPE_INT_RGB);
-        int [][] rgb = new int [watermarkImage.getHeight()][watermarkImage.getWidth()];
-        for (int i = 0; i < watermarkImage.getHeight(); i++) {
-            for (int j = 0; j < watermarkImage.getWidth(); j++) {
+        BufferedImage bImage = new BufferedImage(watermarkWidth, watermarkHeight, BufferedImage.TYPE_INT_RGB);
+        int [][] rgb = new int [watermarkHeight][watermarkWidth];
+        for (int i = 0; i < watermarkHeight; i++) {
+            for (int j = 0; j < watermarkWidth; j++) {
                 rgb[i][j] = new Color(extractedBits[i][j], extractedBits[i][j], extractedBits[i][j]).getRGB();
                 bImage.setRGB(j, i, rgb[i][j]);
             }
         }
         return (new ImagePlus("Extraktovany vodoznak",bImage));
+    }
+
+    public ImagePlus mirrorImage() {
+        //Getting the height and with of the read image.
+        int height = origWithWatermarkImage.getHeight();
+        int width = origWithWatermarkImage.getWidth();
+        var imageWithWatermark = origWithWatermarkImage;
+        BufferedImage res = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        for(int j = 0; j < height; j++){
+            for(int i = 0, w = width - 1; i < width; i++, w--){
+                int p = origWithWatermarkImage.getRGB(i, j);
+                //set mirror image pixel value - both left and right
+                res.setRGB(w, j, p);
+            }
+        }
+        return (new ImagePlus("Prevrateny obrazok",res));
+
     }
 }
