@@ -16,19 +16,22 @@ public class MainWindow {
     private JButton extract;
     private JButton applyMethod1;
     private JSlider sliderH;
-    private JRadioButton modráRadioButton1;
+    private JRadioButton modráRadioButton;
     private JRadioButton zelenáRadioButton;
     private JRadioButton červenáRadioButton;
     private JButton DCT;
     private JButton mirroringButton;
     private JButton deMirroringButton;
-    private JButton extraktovaťVodoznakButton1;
-    private JButton button2;
+    private JButton deRotatingButton;
+    private JButton rotatingButton;
+    private JRadioButton a45RadioButton;
+    private JRadioButton a90RadioButton;
 
     final File[] fileToSend = new File[1];
     private ImagePlus originalWithWatermark;
     private WatermarkLSB watermark;
     private int h;
+    private int rotatingSelection;
 
 
     public static void main(String[] args) {
@@ -41,12 +44,17 @@ public class MainWindow {
     }
         public MainWindow() {
             ButtonGroup group = new ButtonGroup();
-            group.add(modráRadioButton1);
+            group.add(modráRadioButton);
             group.add(zelenáRadioButton);
             group.add(červenáRadioButton);
             this.červenáRadioButton.setActionCommand("red");
             this.zelenáRadioButton.setActionCommand("green");
-            this.modráRadioButton1.setActionCommand("blue");
+            this.modráRadioButton.setActionCommand("blue");
+            ButtonGroup group2 = new ButtonGroup();
+            group2.add(a45RadioButton);
+            group2.add(a90RadioButton);
+            this.a45RadioButton.setActionCommand("45");
+            this.a90RadioButton.setActionCommand("90");
             chooseImage.addActionListener(new ActionListener() {
 
                 @Override
@@ -104,6 +112,19 @@ public class MainWindow {
                     revertMirroring();
                 }
             });
+            rotatingButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    rotatingSelection = Integer.parseInt(group2.getSelection().getActionCommand());
+                    initializeRotating(rotatingSelection);
+                }
+            });
+            deRotatingButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    revertRotating(rotatingSelection);
+                }
+            });
         }
 
 
@@ -140,5 +161,19 @@ public class MainWindow {
         var extractedImage = watermark.extractWatermarkFromImage(h);
         extractedImage.show();
     }
+
+    public void initializeRotating(int rotationType) {
+        var image =watermark.rotate(rotationType);
+        image.show();
+        watermark.setRotatedImage(image.getBufferedImage());
+    }
+
+    public void revertRotating(int rotationType) {
+        var image =watermark.rotate(-rotationType);
+        watermark.setWatermarkImage(image.getBufferedImage());
+        var extractedImage = watermark.extractWatermarkFromImage(h);
+        extractedImage.show();
+    }
+
 }
 

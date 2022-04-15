@@ -28,7 +28,16 @@ public class WatermarkLSB {
         this.mirroredImage = mirroredImage;
     }
 
+    public BufferedImage getRotatedImage() {
+        return rotatedImage;
+    }
+
+    public void setRotatedImage(BufferedImage rotatedImage) {
+        this.rotatedImage = rotatedImage;
+    }
+
     private BufferedImage mirroredImage;
+    private BufferedImage rotatedImage;
 
     private int[][] red;
     private int[][] green;
@@ -245,4 +254,22 @@ public class WatermarkLSB {
         return (new ImagePlus("Prevrateny obrazok",res));
 
     }
+
+    public ImagePlus rotate(double angle){
+        double sin = Math.abs(Math.sin(Math.toRadians(angle))),
+                cos = Math.abs(Math.cos(Math.toRadians(angle)));
+        int height = origWithWatermarkImage.getHeight();
+        int width = origWithWatermarkImage.getWidth();
+        int newWidth = (int) Math.floor(width*cos + height*sin);
+        int newHeight = (int) Math.floor(height*cos + width*sin);
+        System.out.println("new W:"+newWidth+", new H"+newHeight);
+        BufferedImage rotated = new BufferedImage(newWidth, newHeight, origWithWatermarkImage.getType());
+        Graphics2D graphic = rotated.createGraphics();
+        graphic.translate((newWidth-width)/2, (newHeight-height)/2);
+        graphic.rotate(Math.toRadians(angle), width/2.0, height/2.0);
+        graphic.drawRenderedImage(origWithWatermarkImage, null);
+        graphic.dispose();
+        return (new ImagePlus("Zrotovany obrazok",rotated));
+    }
+
 }
