@@ -8,10 +8,10 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 
 public class ColorTransform {
-    private BufferedImage bImage;
-    private ColorModel colorModel;
-    private int imageHeight;
-    private int imageWidth;
+    private BufferedImage imageOrig;
+    private ColorModel colorModelOrig;
+    private int imageHeightOrig;
+    private int imageWidthOrig;
 
     //barevne komponenty
     private int[][] red;
@@ -59,34 +59,34 @@ public class ColorTransform {
         this.cR = cR;
     }
 
-    public int getImageHeight() {
-        return imageHeight;
+    public int getImageHeightOrig() {
+        return imageHeightOrig;
     }
 
-    public int getImageWidth() {
-        return imageWidth;
+    public int getImageWidthOrig() {
+        return imageWidthOrig;
     }
 
 
     public ColorTransform(BufferedImage bImage) {
-        this.bImage = bImage;
-        this.colorModel = bImage.getColorModel();
-        this.imageHeight = bImage.getHeight();
-        this.imageWidth = bImage.getWidth();
-        red = new int[this.imageHeight][this.imageWidth];
-        green = new int[this.imageHeight][this.imageWidth];
-        blue = new int[this.imageHeight][this.imageWidth];
-        y = new Matrix(this.imageHeight, this.imageWidth);
-        cB = new Matrix(this.imageHeight, this.imageWidth);
-        cR = new Matrix(this.imageHeight, this.imageWidth);
+        this.imageOrig = bImage;
+        this.colorModelOrig = bImage.getColorModel();
+        this.imageHeightOrig = bImage.getHeight();
+        this.imageWidthOrig = bImage.getWidth();
+        red = new int[this.imageHeightOrig][this.imageWidthOrig];
+        green = new int[this.imageHeightOrig][this.imageWidthOrig];
+        blue = new int[this.imageHeightOrig][this.imageWidthOrig];
+        y = new Matrix(this.imageHeightOrig, this.imageWidthOrig);
+        cB = new Matrix(this.imageHeightOrig, this.imageWidthOrig);
+        cR = new Matrix(this.imageHeightOrig, this.imageWidthOrig);
     }
 
     public void getRGB() {
-        for (int i = 0; i < this.imageHeight; i++) {
-            for (int j = 0; j < this.imageWidth; j++) {
-                red[i][j] = colorModel.getRed(this.bImage.getRGB(j, i));
-                green[i][j] = colorModel.getGreen(this.bImage.getRGB(j, i));
-                blue[i][j] = colorModel.getBlue(this.bImage.getRGB(j, i));
+        for (int i = 0; i < this.imageHeightOrig; i++) {
+            for (int j = 0; j < this.imageWidthOrig; j++) {
+                red[i][j] = colorModelOrig.getRed(this.imageOrig.getRGB(j, i));
+                green[i][j] = colorModelOrig.getGreen(this.imageOrig.getRGB(j, i));
+                blue[i][j] = colorModelOrig.getBlue(this.imageOrig.getRGB(j, i));
             }
         }
     }
@@ -139,8 +139,8 @@ public class ColorTransform {
 
 
     public void convertRgbToYcbcr() {
-        for (int i = 0; i < this.imageHeight; i++) {
-            for (int j = 0; j < this.imageWidth; j++) {
+        for (int i = 0; i < this.imageHeightOrig; i++) {
+            for (int j = 0; j < this.imageWidthOrig; j++) {
                 y.set(i, j, 0.257 * red[i][j] + 0.504 * green[i][j] + 0.098 * blue[i][j] + 16);
                 cB.set(i, j, -0.148 * red[i][j] - 0.291 * green[i][j] + 0.439 * blue[i][j] + 128);
                 cR.set(i, j, 0.439 * red[i][j] - 0.368 * green[i][j] - 0.071 * blue[i][j] + 128);
@@ -149,8 +149,8 @@ public class ColorTransform {
     }
 
     public void convertYcbcrToRgb() {
-        for (int i = 0; i < this.imageHeight; i++) {
-            for (int j = 0; j < this.imageWidth; j++) {
+        for (int i = 0; i < this.imageHeightOrig; i++) {
+            for (int j = 0; j < this.imageWidthOrig; j++) {
                 red[i][j] = (int) Math.round(1.164 * (y.get(i, j) - 16) + 1.596 * (cR.get(i, j) - 128));
                 if (red[i][j] > 255) red[i][j] = 255;
                 if (red[i][j] < 0) red[i][j] = 0;
@@ -163,35 +163,6 @@ public class ColorTransform {
             }
         }
     }
-
-    public Matrix downsample(Matrix mat) {
-        Matrix newMat = new Matrix(mat.getRowDimension(), mat.getColumnDimension() / 2);
-        for (int i = 0; i < mat.getColumnDimension(); i = i + 2) {
-            newMat.setMatrix(0, mat.getRowDimension() - 1, i / 2, i / 2, mat.getMatrix(0, mat.getRowDimension() - 1, i, i));
-        }
-        return newMat;
-    }
-
-    public Matrix oversample(Matrix mat) {
-        Matrix newMat = new Matrix(mat.getRowDimension(), mat.getColumnDimension() * 2);
-        for (int i = 0; i < mat.getColumnDimension(); i++) {
-            newMat.setMatrix(0, mat.getRowDimension() - 1, 2 * i, 2 * i, mat.getMatrix(0, mat.getRowDimension() - 1, i, i));
-            newMat.setMatrix(0, mat.getRowDimension() - 1, 2 * i + 1, 2 * i + 1, mat.getMatrix(0, mat.getRowDimension() - 1, i, i));
-        }
-        return newMat;
-    }
-
-   // public Matrix transform(int size, Matrix transformMatrix, Matrix inputMatrix) {
-   //     Matrix out = transformMatrix.times(inputMatrix);
-   //     out = out.times(transformMatrix.transpose());
-   //     return (out);
-   // }
-
-    //public Matrix inverseTransform(int size, Matrix transformMatrix, Matrix inputMatrix) {
-    //    Matrix out = transformMatrix.transpose().times(inputMatrix);
-    //    out = out.times(transformMatrix);
-    //    return (out);
-    //}
 
     public Matrix transform(int size, Matrix transformMatrix, Matrix inputMatrix) {
         Matrix newMatrix = new Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());

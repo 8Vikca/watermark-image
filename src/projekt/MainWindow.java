@@ -1,6 +1,5 @@
 package projekt;
 
-import Jama.Matrix;
 import ij.ImagePlus;
 
 import javax.swing.*;
@@ -13,8 +12,8 @@ public class MainWindow {
 
     private JPanel mainPanel;
     private JButton chooseImage;
-    private JButton extract;
-    private JButton applyMethod1;
+    private JButton extractLSB;
+    private JButton LSB;
     private JSlider sliderH;
     private JRadioButton modráRadioButton;
     private JRadioButton zelenáRadioButton;
@@ -26,9 +25,12 @@ public class MainWindow {
     private JButton rotatingButton;
     private JRadioButton a45RadioButton;
     private JRadioButton a90RadioButton;
+    private JButton extractDCT;
 
     final File[] fileToSend = new File[1];
+    private ImagePlus originalImage;
     private ImagePlus originalWithWatermark;
+    private ImagePlus watermarkImage;
     private WatermarkLSB watermark;
     private int h;
     private int rotatingSelection;
@@ -66,20 +68,21 @@ public class MainWindow {
                     int respone = fileChooser.showSaveDialog(null);
                     if(respone == JFileChooser.APPROVE_OPTION) { //ci sa vlozil subor alebo sa okno zavrelo
                         fileToSend[0] = fileChooser.getSelectedFile();
-                        ImagePlus originalImage = new ImagePlus(fileToSend[0].getAbsolutePath());
+                        originalImage = new ImagePlus(fileToSend[0].getAbsolutePath());
+                        watermarkImage = new ImagePlus("watermark.png");
                         originalImage.show();
                     }
                 }
             });
 
-            applyMethod1.addActionListener(new ActionListener() {
+            LSB.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     String selection = group.getSelection().getActionCommand();
                     initializeWatermarkingLSB(selection);
                 }
             });
-            extract.addActionListener(new ActionListener() {
+            extractLSB.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     initializeExtraction();
@@ -89,14 +92,12 @@ public class MainWindow {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     int blockSize = 8;
+                    int quality = 100;
+                    int h = 1;
+                    int u = 1;
+                    int v = 1;
 
-                    //if (a2x2RadioButton.isSelected()) blockSize = 2;
-                    //if (a4x4RadioButton.isSelected()) blockSize = 4;
-                    //if (a8x8RadioButton.isSelected()) blockSize = 8;
-
-                    Matrix tMat = new TransformMatrix().getDctMatrix(blockSize);
-                    ImagePlus originalImage = new ImagePlus(fileToSend[0].getAbsolutePath());
-                    WatermarkDCT watermarkDCT = new WatermarkDCT(originalImage);
+                    initializeWatermarkingDCT(blockSize, quality, h, u ,v);
                     //process.transform(blockSize, tMat, Quantization.getValue());
                 }
             });
@@ -129,7 +130,6 @@ public class MainWindow {
 
 
     private void initializeWatermarkingLSB (String selection) {
-        ImagePlus originalImage = new ImagePlus(fileToSend[0].getAbsolutePath());
         ImagePlus watermarkImage = new ImagePlus("watermark.png");
         h= sliderH.getValue();
         watermark = new WatermarkLSB(originalImage.getBufferedImage(), watermarkImage.getBufferedImage(), selection);
@@ -146,8 +146,9 @@ public class MainWindow {
         extractedImage.show();
     }
 
-    private void initializeWatermarkingDCT() {
-
+    private void initializeWatermarkingDCT(int blockSize, int quality, int h, int u, int v) {
+        WatermarkDCT watermarkDCT = new WatermarkDCT(originalImage, watermarkImage);
+        watermarkDCT.insertWatermarkDCT(blockSize, quality, h, u, v);
     }
 
     private void initializeMirroring () {
