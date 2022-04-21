@@ -15,6 +15,7 @@ public class WatermarkDCT {
 
     private ColorTransform colorTransformWatermark;
     private ColorTransform colorTransformOrig;
+    private ColorTransform colorTransformWatermarkMini;
 
     private ArrayList<Matrix> blocksOrig;
 
@@ -73,6 +74,10 @@ public class WatermarkDCT {
     }
 
     public void addWatermark() {
+        this.colorTransformWatermarkMini = new ColorTransform(watermarkImageMini.getBufferedImage());
+        this.colorTransformWatermarkMini.getRGB();
+        this.colorTransformWatermarkMini.convertRgbToYcbcr();
+        var y = this.colorTransformWatermarkMini.getY();
 
     }
     public ImagePlus resize(BufferedImage img, int newW, int newH) {

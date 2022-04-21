@@ -31,7 +31,10 @@ public class MainWindow {
     private ImagePlus originalImage;
     private ImagePlus originalWithWatermark;
     private ImagePlus watermarkImage;
+    private ImagePlus mirroredImage;
+    private ImagePlus rotatedImage;
     private WatermarkLSB watermark;
+    private int [][][] imageWithWatermarkBits;
     private int h;
     private int rotatingSelection;
 
@@ -133,16 +136,17 @@ public class MainWindow {
         ImagePlus watermarkImage = new ImagePlus("watermark.png");
         h= sliderH.getValue();
         watermark = new WatermarkLSB(originalImage.getBufferedImage(), watermarkImage.getBufferedImage(), selection);
-        watermark.setOriginalBits(watermark.bitsPreparationOrig(h));
-        watermark.setWatermarkBits(watermark.bitsPreparationMark(h));
-        watermark.insertWatermarkInImage();
-        originalWithWatermark = watermark.setImageFromBits();
+        watermark.getRGB(originalImage.getBufferedImage());
+        int[][][] selectedComponentBits3D = watermark.convertComponentIntoBits(h, originalImage.getBufferedImage());
+        int[][][] watermarkBits = watermark.convertWatermarkIntoToBits(h, watermarkImage.getBufferedImage());
+        imageWithWatermarkBits = watermark.insertWatermarkInImage(selectedComponentBits3D, watermarkBits);
+        originalWithWatermark = watermark.setImageFromBits(imageWithWatermarkBits);
         originalWithWatermark.show();
 
     }
 
     private void initializeExtraction() {
-        var extractedImage = this.watermark.extractWatermarkFromImage(h);
+        var extractedImage = this.watermark.extractWatermarkFromImage(h, imageWithWatermarkBits);
         extractedImage.show();
     }
 
@@ -152,28 +156,33 @@ public class MainWindow {
     }
 
     private void initializeMirroring () {
-        var image =watermark.mirrorImage();
-        image.show();
-        watermark.setMirroredImage(image.getBufferedImage());
+        mirroredImage =watermark.mirrorImage(this.originalWithWatermark.getBufferedImage());
+        mirroredImage.show();
     }
     private void revertMirroring () {
-        var image =watermark.mirrorImage();
-        watermark.setWatermarkImage(image.getBufferedImage());
-        var extractedImage = watermark.extractWatermarkFromImage(h);
-        extractedImage.show();
+        var revertedImage =watermark.mirrorImage(mirroredImage.getBufferedImage());
+        revertedImage.show();
+        watermark.getRGB(revertedImage.getBufferedImage());
+        var imageBits = watermark.convertImageToBits(h, revertedImage.getBufferedImage());
+        var extractedWatermark = watermark.extractWatermarkFromImage(h, imageBits);
+        extractedWatermark.show();
     }
 
     public void initializeRotating(int rotationType) {
-        var image =watermark.rotate(rotationType);
-        image.show();
-        watermark.setRotatedImage(image.getBufferedImage());
+        rotatedImage =watermark.rotate(rotationType, this.originalWithWatermark.getBufferedImage());
+        rotatedImage.show();
     }
 
     public void revertRotating(int rotationType) {
-        var image =watermark.rotate(-rotationType);
-        watermark.setWatermarkImage(image.getBufferedImage());
-        var extractedImage = watermark.extractWatermarkFromImage(h);
-        extractedImage.show();
+        var revertedImage =watermark.rotate(-rotationType, this.rotatedImage.getBufferedImage());
+        revertedImage.show();
+        watermark.getRGB(revertedImage.getBufferedImage());
+        var imageBits = watermark.convertImageToBits(h, revertedImage.getBufferedImage());
+        var extractedWatermark = watermark.extractWatermarkFromImage(h, imageBits);
+        extractedWatermark.show();
+        //watermark.setWatermarkImage(image.getBufferedImage());
+        //var extractedImage = watermark.extractWatermarkFromImage(h);
+        //extractedImage.show();
     }
 
 }

@@ -164,6 +164,7 @@ public class ColorTransform {
         }
     }
 
+    //roznásobenie matice obrázku a dct matice
     public Matrix transform(int size, Matrix transformMatrix, Matrix inputMatrix) {
         Matrix newMatrix = new Matrix(inputMatrix.getRowDimension(), inputMatrix.getColumnDimension());
         for (int i = 0; i < inputMatrix.getRowDimension(); i+=size) {
@@ -199,6 +200,7 @@ public class ColorTransform {
 
     }
 
+    //zaokruhlenie hodnot podla tabulky
     public Matrix quantization(Matrix qMat, Matrix input) {
         Matrix res = new Matrix(input.getRowDimension(), input.getColumnDimension());
         for (int i = 0; i < input.getRowDimension(); i++) {
