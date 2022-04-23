@@ -92,16 +92,16 @@ public class ColorTransform {
     }
 
     //pro vytvoření modelu RGB
-    public ImagePlus setImageFromRGB(int width, int height, int[][] r, int[][] g, int[][] b) {
+    public ImagePlus setImageFromRGB(int width, int height) {
         BufferedImage bImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         int[][] rgb = new int[height][width];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                rgb[i][j] = new Color(r[i][j], g[i][j], b[i][j]).getRGB();
+                rgb[i][j] = new Color(red[i][j], green[i][j], blue[i][j]).getRGB();
                 bImage.setRGB(j, i, rgb[i][j]);
             }
         }
-        return (new ImagePlus("", bImage));
+        return (new ImagePlus("Vlozeny watermark (DCT)", bImage));
     }
 
     // Pro vytvoření modelu jedné komponenty R G B z pole int

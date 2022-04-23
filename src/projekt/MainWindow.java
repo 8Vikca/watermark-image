@@ -95,13 +95,13 @@ public class MainWindow {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     int blockSize = 8;
-                    int quality = 100;
-                    int h = 1;
-                    int u = 1;
-                    int v = 1;
+                    int h = 2;
+                    int u1 = 1;
+                    int v1 = 4;
+                    int u2 = 3;
+                    int v2 = 3;
 
-                    initializeWatermarkingDCT(blockSize, quality, h, u ,v);
-                    //process.transform(blockSize, tMat, Quantization.getValue());
+                    initializeWatermarkingDCT(blockSize, h, u1 ,v1, u2, v2);
                 }
             });
             mirroringButton.addActionListener(new ActionListener() {
@@ -150,9 +150,10 @@ public class MainWindow {
         extractedImage.show();
     }
 
-    private void initializeWatermarkingDCT(int blockSize, int quality, int h, int u, int v) {
+    private void initializeWatermarkingDCT(int blockSize, int h, int u1, int v1, int u2, int v2) {
         WatermarkDCT watermarkDCT = new WatermarkDCT(originalImage, watermarkImage);
-        watermarkDCT.insertWatermarkDCT(blockSize, quality, h, u, v);
+        var origWithWatermark = watermarkDCT.insertWatermarkDCT(blockSize, h, u1, v1, u2, v2);
+        origWithWatermark.show();
     }
 
     private void initializeMirroring () {

@@ -199,7 +199,7 @@ public class WatermarkLSB {
                 image.setRGB(j, i, rgb[i][j]);
             }
         }
-        return (new ImagePlus("Vlozeny watermark",image));
+        return (new ImagePlus("Vlozeny watermark (LSB)",image));
     }
 
     public ImagePlus extractWatermarkFromImage(int h, int[][][] bitForExtraction) {

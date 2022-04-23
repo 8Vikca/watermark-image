@@ -18,6 +18,11 @@ public class WatermarkDCT {
     private ColorTransform colorTransformWatermarkMini;
 
     private ArrayList<Matrix> blocksOrig;
+    private int imageHeight;
+    private int imageWidth;
+
+    public static final int BLACK = 0;
+    public static final int WHITE = 1;
 
     /**Pro jasovou slozku */
     public static final double[][] quantizationMatrix = {{16, 11, 10, 16, 24, 40, 51, 61},
@@ -35,6 +40,8 @@ public class WatermarkDCT {
         this.watermarkImage = watermarkImage;
         blocksOrig = new ArrayList<>();
         loadImages();
+        this.imageHeight = imagePlus.getBufferedImage().getHeight();
+        this.imageWidth = imagePlus.getBufferedImage().getWidth();
     }
 
     public void loadImages () {
@@ -49,9 +56,10 @@ public class WatermarkDCT {
 
     }
 
-    public void insertWatermarkDCT(int blockSize, int quality, int h, int u, int v) {
+    public ImagePlus insertWatermarkDCT(int blockSize, int h, int u1, int v1, int u2, int v2) {
         // DCT transformacia s rozdelenim na bloky
-        this.transform(blockSize, quality);
+        Matrix tMat = new TransformMatrix().getDctMatrix(blockSize);
+        this.transform(blockSize, tMat);
 
         //zmena velkosti watermarku
         var watermarkPixelSum = watermarkImage.getHeight()*watermarkImage.getWidth();
@@ -68,18 +76,78 @@ public class WatermarkDCT {
         watermarkImageMini.show();
 
         //pridat vodoznak
-        this.addWatermark();
+        this.addWatermark(h, u1, v1, u2, v2, blockSize);
 
+        //inverzna DCT
+        this.iTransform(blockSize, tMat);
+
+        colorTransformOrig.convertYcbcrToRgb();
+
+        return (colorTransformOrig.setImageFromRGB(this.imageWidth, this. imageHeight));
 
     }
 
-    public void addWatermark() {
+    public void addWatermark(int h, int u1, int v1, int u2, int v2, int blockSize) {
         this.colorTransformWatermarkMini = new ColorTransform(watermarkImageMini.getBufferedImage());
         this.colorTransformWatermarkMini.getRGB();
-        this.colorTransformWatermarkMini.convertRgbToYcbcr();
-        var y = this.colorTransformWatermarkMini.getY();
+        var miniRed = this.colorTransformWatermarkMini.getRed();
+        var origYMatrix = this.colorTransformOrig.getY();
 
+        int block = 0;
+
+        for (int i = 0; i < watermarkImageMini.getHeight(); i++) {
+            for (int j = 0; j < watermarkImageMini.getWidth(); j++) {
+                var origY = blocksOrig.get(block).getArray();
+                if (miniRed[i][j] == BLACK) {
+                    if(Math.abs(origY[u1][v1] - origY[u2][v2]) <= h) {
+                        if(origY[u1][v1] > origY[u2][v2]) {
+                            origY[u1][v1] += h/2.0;
+                            origY[u2][v2] -= h/2.0;
+                        } else {
+                            origY[u1][v1] -= h/2.0;
+                            origY[u2][v2] += h/2.0;
+                        }
+
+                    }
+                    if(origY[u1][v1] <= origY[u2][v2]) {
+                        var value = origY[u1][v1];
+                        origY[u1][v1] = origY[u2][v2];
+                        origY[u2][v2] = value;
+                    }
+                } else {
+                    if(Math.abs(origY[u1][v1] - origY[u2][v2]) <= h) {
+                        if(origY[u1][v1] > origY[u2][v2]) {
+                            origY[u1][v1] += h/2.0;
+                            origY[u2][v2] -= h/2.0;
+                        } else {
+                            origY[u1][v1] -= h/2.0;
+                            origY[u2][v2] += h/2.0;
+                        }
+                    }
+                    if(origY[u1][v1] > origY[u2][v2]) {
+                        var value = origY[u1][v1];
+                        origY[u1][v1] = origY[u2][v2];
+                        origY[u2][v2] = value;
+                    }
+                }
+                blocksOrig.set(block, new Matrix(origY));
+                block ++;
+            }
+        }
+
+        //zlepenie matrixov do 1
+        block = 0;
+        for (int i = 0; i < colorTransformOrig.getY().getRowDimension(); i = i + blockSize) {
+            for (int j = 0; j < colorTransformOrig.getY().getColumnDimension(); j = j + blockSize) {
+                origYMatrix.setMatrix(i,i + blockSize - 1, j, j + blockSize - 1,blocksOrig.get(block));
+                block ++;
+            }
+        }
+        var oldY = colorTransformOrig.getY();
+        colorTransformOrig.setY(origYMatrix);
     }
+
+
     public ImagePlus resize(BufferedImage img, int newW, int newH) {
         Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         BufferedImage newBf = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
@@ -106,28 +174,15 @@ public class WatermarkDCT {
                 newerBf.setRGB(j,i,new Color(red,green,blue).getRGB());
             }
         }
-        return (new ImagePlus("Prevrateny obrazok",newerBf));
+        return (new ImagePlus("Zmenseny obrazok",newerBf));
     }
 
-    public void transform(int blockSize, int quality) {
-        Matrix dctMatrix = new TransformMatrix().getDctMatrix(blockSize);
-
+    public void transform(int blockSize, Matrix transformMatrix) {
         Matrix y = new Matrix(colorTransformOrig.getY().getRowDimension(), colorTransformOrig.getY().getColumnDimension());
-        Matrix qMatY = new Matrix(quantizationMatrix);
-
-        double alpha = 0.0;
-        if (quality >= 1 && quality < 50) {
-            alpha = 50.0 / quality;
-            qMatY = qMatY.times(alpha);
-        }
-        if (quality > 50 && quality <= 99) {
-            alpha = 2 - ((2 * quality) / 100.0);
-            qMatY = qMatY.times(alpha);
-        }
 
         for (int i = 0; i < colorTransformOrig.getY().getRowDimension() - 1; i = i + blockSize) {
             for (int j = 0; j < colorTransformOrig.getY().getColumnDimension() - 1; j = j + blockSize) {
-                y.setMatrix(i, i + blockSize - 1, j, j + blockSize - 1, colorTransformOrig.quantization(qMatY, colorTransformOrig.transform(blockSize, dctMatrix, colorTransformOrig.getY().getMatrix(i, i + blockSize - 1, j, j + blockSize - 1))));
+                y.setMatrix(i, i + blockSize - 1, j, j + blockSize - 1, colorTransformOrig.transform(blockSize, transformMatrix, colorTransformOrig.getY().getMatrix(i, i + blockSize - 1, j, j + blockSize - 1)));
                 blocksOrig.add(colorTransformOrig.getY().getMatrix(i, i + blockSize - 1, j, j + blockSize - 1));
             }
         }
@@ -135,17 +190,12 @@ public class WatermarkDCT {
         colorTransformOrig.setY(y);
     }
 
-    public void iTransform(int blockSize, Matrix transformMatrix, int quality) {
+    public void iTransform(int blockSize, Matrix transformMatrix) {
         Matrix y = new Matrix(colorTransformOrig.getY().getRowDimension(), colorTransformOrig.getY().getColumnDimension());
-
-        Matrix qMatY = new Matrix(quantizationMatrix);
-
-        double alpha = 0.0;
-        quality = 50;
 
         for (int i = 0; i < colorTransformOrig.getY().getRowDimension() - 1; i = i + blockSize) {
             for (int j = 0; j < colorTransformOrig.getY().getColumnDimension() - 1; j = j + blockSize) {
-                y.setMatrix(i, i + blockSize - 1, j, j + blockSize - 1, colorTransformOrig.inverseTransform(blockSize, transformMatrix, colorTransformOrig.inverseQuantization(qMatY, colorTransformOrig.getY().getMatrix(i, i + blockSize - 1, j, j + blockSize - 1))));
+                y.setMatrix(i, i + blockSize - 1, j, j + blockSize - 1, colorTransformOrig.inverseTransform(blockSize, transformMatrix, colorTransformOrig.getY().getMatrix(i, i + blockSize - 1, j, j + blockSize - 1)));
             }
         }
 
