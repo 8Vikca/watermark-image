@@ -183,7 +183,7 @@ public class WatermarkDCT {
         for (int i = 0; i < colorTransformOrig.getY().getRowDimension() - 1; i = i + blockSize) {
             for (int j = 0; j < colorTransformOrig.getY().getColumnDimension() - 1; j = j + blockSize) {
                 y.setMatrix(i, i + blockSize - 1, j, j + blockSize - 1, colorTransformOrig.transform(blockSize, transformMatrix, colorTransformOrig.getY().getMatrix(i, i + blockSize - 1, j, j + blockSize - 1)));
-                blocksOrig.add(colorTransformOrig.getY().getMatrix(i, i + blockSize - 1, j, j + blockSize - 1));
+                blocksOrig.add(y.getMatrix(i, i + blockSize - 1, j, j + blockSize - 1));
             }
         }
 
