@@ -21,12 +21,10 @@ public class WatermarkDCT {
     private int imageWidth;
 
     public static final int BLACK = 0;
-    public static final int WHITE = 1;
 
      public WatermarkDCT(ImagePlus imagePlus, ImagePlus watermarkImage) {
         this.imagePlus = imagePlus;
         this.watermarkImage = watermarkImage;
-        blocksOrig = new ArrayList<>();
         loadImages();
         this.imageHeight = imagePlus.getBufferedImage().getHeight();
         this.imageWidth = imagePlus.getBufferedImage().getWidth();
@@ -39,28 +37,36 @@ public class WatermarkDCT {
 
     }
 
-    public ImagePlus extractWatermarkFromImage(int blockSize, int h) {
-        // ziskani y
-        Matrix yMatrix = imageWithWatermark.getY().copy();
+    public ImagePlus extractWatermarkFromImage(int blockSize,  int u1, int v1, int u2, int v2) {
+        var extractedBits = new int[watermarkImageMini.getHeight()][watermarkImageMini.getWidth()];
 
-        int numberOfBitsWatermark = workingWatermarkMini.getImageHeight() * workingWatermarkMini.getImageWidth();
+        Matrix tMat = new TransformMatrix().getDctMatrix(blockSize);
+        this.transform(blockSize, tMat);
 
-        // prevod vytvoreni listu pro watermark
-        ArrayList<Integer> watermarkList = new ArrayList<>();
+        int block = 0;
 
-        // rozdelit na bloky
-        ArrayList<Matrix> blocks = TransformMatrix.getBlocks(8, yMatrix);
-
-        // DCT transformace
-        double bi, bj;
-
-        Matrix dctMatrix = TransformMatrix.getDctMatrix(8);
-        // DCT transformace
-        for (int i = 0; i < numberOfBitsWatermark; i++) {
-            // 2D-DCT
-            Matrix helpMatrix = dctMatrix.times(blocks.get(i));
-            Matrix matrixAfterDCT = helpMatrix.times(dctMatrix.transpose());
+        for (int i = 0; i < watermarkImageMini.getHeight(); i++) {
+            for (int j = 0; j < watermarkImageMini.getWidth(); j++) {
+                var origY = blocksOrig.get(block).getArray();
+                if (origY[u1][v1] > origY[u2][v2]) {
+                    extractedBits[i][j] = 0;
+                } else {
+                    extractedBits[i][j] = 255;
+                }
+                block ++;
+            }
         }
+
+        BufferedImage bImage = new BufferedImage(watermarkImageMini.getWidth(), watermarkImageMini.getHeight(), BufferedImage.TYPE_INT_RGB);
+        int [][] rgb = new int [watermarkImageMini.getHeight()][watermarkImageMini.getWidth()];
+        for (int i = 0; i < watermarkImageMini.getHeight(); i++) {
+            for (int j = 0; j < watermarkImageMini.getWidth(); j++) {
+                rgb[i][j] = new Color(extractedBits[i][j], extractedBits[i][j], extractedBits[i][j]).getRGB();
+                bImage.setRGB(j, i, rgb[i][j]);
+            }
+        }
+
+        return (new ImagePlus("Extraktovany vodoznak (DCT)",bImage));
     }
 
     public ImagePlus insertWatermarkDCT(int blockSize, int h, int u1, int v1, int u2, int v2) {
@@ -69,7 +75,7 @@ public class WatermarkDCT {
         this.transform(blockSize, tMat);
 
         //zmena velkosti watermarku
-            this.resizeWatermark(watermarkImage);
+        this.resizeWatermark(watermarkImage);
 
         //pridat vodoznak
         this.addWatermark(h, u1, v1, u2, v2, blockSize);
@@ -84,10 +90,10 @@ public class WatermarkDCT {
     }
         public void resizeWatermark(ImagePlus watermarkImage) {
             var watermarkPixelSum = watermarkImage.getHeight()*watermarkImage.getWidth();
-            if(watermarkPixelSum > blocks.size()) {
+            if(watermarkPixelSum > blocksOrig.size()) {
                 watermarkImageMini = resize(this.watermarkImage.getBufferedImage(), (int) (this.watermarkImage.getWidth()*0.8),(int) (this.watermarkImage.getWidth()*0.8));
                 watermarkPixelSum = watermarkImageMini.getHeight()*watermarkImageMini.getWidth();
-                while(watermarkPixelSum > blocks.size()) {
+                while(watermarkPixelSum > blocksOrig.size()) {
                     watermarkImageMini = resize(this.watermarkImageMini.getBufferedImage(), (int) (this.watermarkImageMini.getWidth()*0.8),(int) (this.watermarkImageMini.getWidth()*0.8));
                     watermarkPixelSum = watermarkImageMini.getHeight()*watermarkImageMini.getWidth();
                 }
@@ -152,7 +158,6 @@ public class WatermarkDCT {
                 block ++;
             }
         }
-        var oldY = colorTransformOrig.getY();
         colorTransformOrig.setY(origYMatrix);
     }
 
@@ -188,11 +193,12 @@ public class WatermarkDCT {
 
     public void transform(int blockSize, Matrix transformMatrix) {
         Matrix y = new Matrix(colorTransformOrig.getY().getRowDimension(), colorTransformOrig.getY().getColumnDimension());
+        blocksOrig = new ArrayList<>();
 
         for (int i = 0; i < colorTransformOrig.getY().getRowDimension() - 1; i = i + blockSize) {
             for (int j = 0; j < colorTransformOrig.getY().getColumnDimension() - 1; j = j + blockSize) {
                 y.setMatrix(i, i + blockSize - 1, j, j + blockSize - 1, colorTransformOrig.transform(blockSize, transformMatrix, colorTransformOrig.getY().getMatrix(i, i + blockSize - 1, j, j + blockSize - 1)));
-                blocksOrig.add(colorTransformOrig.getY().getMatrix(i, i + blockSize - 1, j, j + blockSize - 1));
+                blocksOrig.add(y.getMatrix(i, i + blockSize - 1, j, j + blockSize - 1));
             }
         }
 

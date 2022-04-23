@@ -223,7 +223,7 @@ public class WatermarkLSB {
                 bImage.setRGB(j, i, rgb[i][j]);
             }
         }
-        return (new ImagePlus("Extraktovany vodoznak",bImage));
+        return (new ImagePlus("Extraktovany vodoznak (LSB)",bImage));
     }
 
     public ImagePlus mirrorImage(BufferedImage imageForMirroring) {

@@ -29,6 +29,7 @@ public class MainWindow {
     private JRadioButton first;
     private JRadioButton second;
     private JRadioButton third;
+    private JSlider sliderH2;
 
     final File[] fileToSend = new File[1];
     private ImagePlus originalImage;
@@ -39,9 +40,11 @@ public class MainWindow {
     private WatermarkLSB watermark;
     private WatermarkDCT watermarkDCT;
     private int [][][] imageWithWatermarkBits;
-    private int h;
+    private int hLSB;
+    private int hDCT;
     private int rotatingSelection;
     private int blockSize = 8;
+    private int u1 =3,v1 =1,u2 =4,v2 =1;
 
 
     public static void main(String[] args) {
@@ -66,9 +69,9 @@ public class MainWindow {
             this.a45RadioButton.setActionCommand("45");
             this.a90RadioButton.setActionCommand("90");
             ButtonGroup group3 = new ButtonGroup();
-            group.add(first);
-            group.add(second);
-            group.add(third);
+            group3.add(first);
+            group3.add(second);
+            group3.add(third);
             this.first.setActionCommand("first");
             this.second.setActionCommand("second");
             this.third.setActionCommand("third");
@@ -106,31 +109,27 @@ public class MainWindow {
             DCT.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    int h = 20;
-                    int u1 =3,v1 =1,u2 =4,v2 =1;
+                    hDCT = sliderH2.getValue();
 
                     String selection = group3.getSelection().getActionCommand();
                     switch (selection) {
                         case "first":
-                            u1 = 3;
-                            v1 = 1;
-                            u2 = 4;
-                            v2 = 1;
+                            u1 = 3; v1 = 1; u2 = 4; v2 = 1;
                             break;
                         case "second":
-                            u1 = 4;
-                            v1 = 3;
-                            u2 = 5;
-                            v2 = 2;
+                            u1 = 4; v1 = 3; u2 = 5; v2 = 2;
                             break;
                         case "third":
-                            u1 = 1;
-                            v1 = 4;
-                            u2 = 3;
-                            v2 = 3;
+                            u1 = 1; v1 = 4; u2 = 3; v2 = 3;
                             break;
                     }
-                    initializeWatermarkingDCT(blockSize, h, u1 ,v1, u2, v2);
+                    initializeWatermarkingDCT(blockSize, hDCT, u1 ,v1, u2, v2);
+                }
+            });
+            extractDCT.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    initializeExtractionDCT(blockSize, hDCT, u1 ,v1, u2, v2);
                 }
             });
             mirroringButton.addActionListener(new ActionListener() {
@@ -158,22 +157,16 @@ public class MainWindow {
                     revertRotating(rotatingSelection);
                 }
             });
-            extractDCT.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    initializeExtractionDCT();
-                }
-            });
         }
 
 
     private void initializeWatermarkingLSB (String selection) {
         ImagePlus watermarkImage = new ImagePlus("watermark.png");
-        h= sliderH.getValue();
+        hLSB = sliderH.getValue();
         watermark = new WatermarkLSB(originalImage.getBufferedImage(), watermarkImage.getBufferedImage(), selection);
         watermark.getRGB(originalImage.getBufferedImage());
-        int[][][] selectedComponentBits3D = watermark.convertComponentIntoBits(h, originalImage.getBufferedImage());
-        int[][][] watermarkBits = watermark.convertWatermarkIntoToBits(h, watermarkImage.getBufferedImage());
+        int[][][] selectedComponentBits3D = watermark.convertComponentIntoBits(hLSB, originalImage.getBufferedImage());
+        int[][][] watermarkBits = watermark.convertWatermarkIntoToBits(hLSB, watermarkImage.getBufferedImage());
         imageWithWatermarkBits = watermark.insertWatermarkInImage(selectedComponentBits3D, watermarkBits);
         originalWithWatermark = watermark.setImageFromBits(imageWithWatermarkBits);
         originalWithWatermark.show();
@@ -181,17 +174,17 @@ public class MainWindow {
     }
 
     private void initializeExtractionLSB() {
-        var extractedImage = this.watermark.extractWatermarkFromImage(h, imageWithWatermarkBits);
+        var extractedImage = this.watermark.extractWatermarkFromImage(hLSB, imageWithWatermarkBits);
         extractedImage.show();
     }
 
     private void initializeWatermarkingDCT(int blockSize, int h, int u1, int v1, int u2, int v2) {
-        WatermarkDCT watermarkDCT = new WatermarkDCT(originalImage, watermarkImage);
+        watermarkDCT = new WatermarkDCT(originalImage, watermarkImage);
         var origWithWatermark = watermarkDCT.insertWatermarkDCT(blockSize, h, u1, v1, u2, v2);
         origWithWatermark.show();
     }
-    private void initializeExtractionDCT() {
-        var extractedImage = this.watermarkDCT.extractWatermarkFromImage(blockSize, h);
+    private void initializeExtractionDCT(int blockSize, int h, int u1, int v1, int u2, int v2) {
+        var extractedImage = this.watermarkDCT.extractWatermarkFromImage(blockSize, u1, v1, u2, v2);
         extractedImage.show();
     }
 
@@ -203,8 +196,8 @@ public class MainWindow {
         var revertedImage =watermark.mirrorImage(mirroredImage.getBufferedImage());
         revertedImage.show();
         watermark.getRGB(revertedImage.getBufferedImage());
-        var imageBits = watermark.convertImageToBits(h, revertedImage.getBufferedImage());
-        var extractedWatermark = watermark.extractWatermarkFromImage(h, imageBits);
+        var imageBits = watermark.convertImageToBits(hLSB, revertedImage.getBufferedImage());
+        var extractedWatermark = watermark.extractWatermarkFromImage(hLSB, imageBits);
         extractedWatermark.show();
     }
 
@@ -217,8 +210,8 @@ public class MainWindow {
         var revertedImage =watermark.rotate(-rotationType, this.rotatedImage.getBufferedImage());
         revertedImage.show();
         watermark.getRGB(revertedImage.getBufferedImage());
-        var imageBits = watermark.convertImageToBits(h, revertedImage.getBufferedImage());
-        var extractedWatermark = watermark.extractWatermarkFromImage(h, imageBits);
+        var imageBits = watermark.convertImageToBits(hLSB, revertedImage.getBufferedImage());
+        var extractedWatermark = watermark.extractWatermarkFromImage(hLSB, imageBits);
         extractedWatermark.show();
         //watermark.setWatermarkImage(image.getBufferedImage());
         //var extractedImage = watermark.extractWatermarkFromImage(h);
