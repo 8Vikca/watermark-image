@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="12" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="671" height="429"/>
+      <xy x="20" y="20" width="671" height="454"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -85,15 +85,6 @@
         <properties>
           <font style="1"/>
           <text value=""/>
-        </properties>
-      </component>
-      <component id="c1e8f" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="5" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <font style="1"/>
-          <text value="Metóda vodoznačenia s využitím 2D-DCT transformácie"/>
         </properties>
       </component>
       <component id="cd940" class="javax.swing.JButton" binding="DCT">
@@ -196,6 +187,39 @@
         </constraints>
         <properties>
           <text value="Extraktovať vodoznak"/>
+        </properties>
+      </component>
+      <component id="2d03a" class="javax.swing.JRadioButton" binding="third">
+        <constraints>
+          <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="[1,4] [3,3]"/>
+        </properties>
+      </component>
+      <component id="c1e8f" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font style="1"/>
+          <text value="Metóda vodoznačenia s využitím 2D-DCT transformácie"/>
+        </properties>
+      </component>
+      <component id="5a611" class="javax.swing.JRadioButton" binding="first">
+        <constraints>
+          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="[3,1] [4,1]"/>
+        </properties>
+      </component>
+      <component id="41ee8" class="javax.swing.JRadioButton" binding="second">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="[4,3] [5,2]"/>
         </properties>
       </component>
     </children>

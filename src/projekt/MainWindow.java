@@ -26,6 +26,9 @@ public class MainWindow {
     private JRadioButton a45RadioButton;
     private JRadioButton a90RadioButton;
     private JButton extractDCT;
+    private JRadioButton first;
+    private JRadioButton second;
+    private JRadioButton third;
 
     final File[] fileToSend = new File[1];
     private ImagePlus originalImage;
@@ -34,9 +37,11 @@ public class MainWindow {
     private ImagePlus mirroredImage;
     private ImagePlus rotatedImage;
     private WatermarkLSB watermark;
+    private WatermarkDCT watermarkDCT;
     private int [][][] imageWithWatermarkBits;
     private int h;
     private int rotatingSelection;
+    private int blockSize = 8;
 
 
     public static void main(String[] args) {
@@ -60,6 +65,13 @@ public class MainWindow {
             group2.add(a90RadioButton);
             this.a45RadioButton.setActionCommand("45");
             this.a90RadioButton.setActionCommand("90");
+            ButtonGroup group3 = new ButtonGroup();
+            group.add(first);
+            group.add(second);
+            group.add(third);
+            this.first.setActionCommand("first");
+            this.second.setActionCommand("second");
+            this.third.setActionCommand("third");
             chooseImage.addActionListener(new ActionListener() {
 
                 @Override
@@ -88,19 +100,36 @@ public class MainWindow {
             extractLSB.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    initializeExtraction();
+                    initializeExtractionLSB();
                 }
             });
             DCT.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    int blockSize = 8;
-                    int h = 2;
-                    int u1 = 1;
-                    int v1 = 4;
-                    int u2 = 3;
-                    int v2 = 3;
+                    int h = 20;
+                    int u1 =3,v1 =1,u2 =4,v2 =1;
 
+                    String selection = group3.getSelection().getActionCommand();
+                    switch (selection) {
+                        case "first":
+                            u1 = 3;
+                            v1 = 1;
+                            u2 = 4;
+                            v2 = 1;
+                            break;
+                        case "second":
+                            u1 = 4;
+                            v1 = 3;
+                            u2 = 5;
+                            v2 = 2;
+                            break;
+                        case "third":
+                            u1 = 1;
+                            v1 = 4;
+                            u2 = 3;
+                            v2 = 3;
+                            break;
+                    }
                     initializeWatermarkingDCT(blockSize, h, u1 ,v1, u2, v2);
                 }
             });
@@ -129,6 +158,12 @@ public class MainWindow {
                     revertRotating(rotatingSelection);
                 }
             });
+            extractDCT.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    initializeExtractionDCT();
+                }
+            });
         }
 
 
@@ -145,7 +180,7 @@ public class MainWindow {
 
     }
 
-    private void initializeExtraction() {
+    private void initializeExtractionLSB() {
         var extractedImage = this.watermark.extractWatermarkFromImage(h, imageWithWatermarkBits);
         extractedImage.show();
     }
@@ -154,6 +189,10 @@ public class MainWindow {
         WatermarkDCT watermarkDCT = new WatermarkDCT(originalImage, watermarkImage);
         var origWithWatermark = watermarkDCT.insertWatermarkDCT(blockSize, h, u1, v1, u2, v2);
         origWithWatermark.show();
+    }
+    private void initializeExtractionDCT() {
+        var extractedImage = this.watermarkDCT.extractWatermarkFromImage(blockSize, h);
+        extractedImage.show();
     }
 
     private void initializeMirroring () {
