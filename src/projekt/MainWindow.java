@@ -5,6 +5,7 @@ import ij.ImagePlus;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.swing.JFileChooser;
 
@@ -45,7 +46,9 @@ public class MainWindow {
     private int rotatingSelection;
     private int blockSize = 8;
     private int u1 =3,v1 =1,u2 =4,v2 =1;
-
+    private  Quality quality;
+    private String selection;
+    private ButtonGroup group;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Aplikace pro zpracování obrazu");
@@ -56,7 +59,7 @@ public class MainWindow {
         frame.setVisible(true);
     }
         public MainWindow() {
-            ButtonGroup group = new ButtonGroup();
+            group = new ButtonGroup();
             group.add(modráRadioButton);
             group.add(zelenáRadioButton);
             group.add(červenáRadioButton);
@@ -75,6 +78,7 @@ public class MainWindow {
             this.first.setActionCommand("first");
             this.second.setActionCommand("second");
             this.third.setActionCommand("third");
+            quality = new Quality();
             chooseImage.addActionListener(new ActionListener() {
 
                 @Override
@@ -96,7 +100,7 @@ public class MainWindow {
             LSB.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    String selection = group.getSelection().getActionCommand();
+                    selection = group.getSelection().getActionCommand();
                     initializeWatermarkingLSB(selection);
                 }
             });
@@ -170,12 +174,13 @@ public class MainWindow {
         imageWithWatermarkBits = watermark.insertWatermarkInImage(selectedComponentBits3D, watermarkBits);
         originalWithWatermark = watermark.setImageFromBits(imageWithWatermarkBits);
         originalWithWatermark.show();
-
     }
 
     private void initializeExtractionLSB() {
         var extractedImage = this.watermark.extractWatermarkFromImage(hLSB, imageWithWatermarkBits);
         extractedImage.show();
+
+        System.out.println(this.getPsnr("LSB", selection, hLSB, watermarkImage.getBufferedImage(), extractedImage.getBufferedImage()));
     }
 
     private void initializeWatermarkingDCT(int blockSize, int h, int u1, int v1, int u2, int v2) {
@@ -186,6 +191,11 @@ public class MainWindow {
     private void initializeExtractionDCT(int blockSize, int h, int u1, int v1, int u2, int v2) {
         var extractedImage = this.watermarkDCT.extractWatermarkFromImage(blockSize, u1, v1, u2, v2);
         extractedImage.show();
+
+        selection = group.getSelection().getActionCommand();
+        String koeficient = "[" + u1 + "," + v1 + "]" + ";" + "[" + u2 + "," + v2 + "]";
+        System.out.println("Koeficient: " + koeficient + " - " + this.getPsnr("DCT", selection, h,  watermarkImage.getBufferedImage(), extractedImage.getBufferedImage()));
+
     }
 
     private void initializeMirroring () {
@@ -199,6 +209,8 @@ public class MainWindow {
         var imageBits = watermark.convertImageToBits(hLSB, revertedImage.getBufferedImage());
         var extractedWatermark = watermark.extractWatermarkFromImage(hLSB, imageBits);
         extractedWatermark.show();
+
+        System.out.println(this.getPsnr("LSB Mirroring", selection, hLSB, watermarkImage.getBufferedImage(), extractedWatermark.getBufferedImage()));
     }
 
     public void initializeRotating(int rotationType) {
@@ -213,10 +225,33 @@ public class MainWindow {
         var imageBits = watermark.convertImageToBits(hLSB, revertedImage.getBufferedImage());
         var extractedWatermark = watermark.extractWatermarkFromImage(hLSB, imageBits);
         extractedWatermark.show();
-        //watermark.setWatermarkImage(image.getBufferedImage());
-        //var extractedImage = watermark.extractWatermarkFromImage(h);
-        //extractedImage.show();
+
+        System.out.println(this.getPsnr("LSB Rotating", selection, hLSB, watermarkImage.getBufferedImage(), extractedWatermark.getBufferedImage()));
     }
 
+    private String getPsnr(String method, String selection, int h, BufferedImage origImage, BufferedImage origWithWatermarkImage) {
+        var colorTransformOrig = new ColorTransform(origImage);
+        var colorTransformOrigWithWatermark = new ColorTransform(origWithWatermarkImage);
+        colorTransformOrig.getRGB();
+        colorTransformOrigWithWatermark.getRGB();
+        int[][] componentOrig; int[][] componentOrigWithWatermark;
+
+        switch (selection) {
+            case "green":
+                componentOrig = colorTransformOrig.getGreen();
+                componentOrigWithWatermark = colorTransformOrig.getGreen();
+                break;
+            case "blue":
+                componentOrig = colorTransformOrig.getBlue();
+                componentOrigWithWatermark = colorTransformOrig.getBlue();
+                break;
+            default:
+                componentOrig = colorTransformOrig.getRed();
+                componentOrigWithWatermark = colorTransformOrig.getRed();
+                break;
+        }
+        return ("Metoda: " +  method + ", zlozka: " + selection + ", hlbka: " + h + ", PSNR: " + quality.getPsnr(componentOrig, componentOrigWithWatermark));
+
+    }
 }
 
