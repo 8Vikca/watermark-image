@@ -38,35 +38,11 @@ public class ColorTransform {
         return y;
     }
 
-    public Matrix getcB() {
-        return cB;
-    }
-
-    public Matrix getcR() {
-        return cR;
-    }
 
 
     public void setY(Matrix y) {
         this.y = y;
     }
-
-    public void setcB(Matrix cB) {
-        this.cB = cB;
-    }
-
-    public void setcR(Matrix cR) {
-        this.cR = cR;
-    }
-
-    public int getImageHeightOrig() {
-        return imageHeightOrig;
-    }
-
-    public int getImageWidthOrig() {
-        return imageWidthOrig;
-    }
-
 
     public ColorTransform(BufferedImage bImage) {
         this.imageOrig = bImage;
@@ -103,40 +79,6 @@ public class ColorTransform {
         }
         return (new ImagePlus("Vlozeny watermark (DCT)", bImage));
     }
-
-    // Pro vytvoření modelu jedné komponenty R G B z pole int
-    public ImagePlus setImageFromRGB(int width, int height, int[][] x, String component) {
-        BufferedImage bImage = new BufferedImage(width, height,
-                BufferedImage.TYPE_INT_RGB);
-        int[][] rgb = new int[height][width];
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                rgb[i][j] = new Color(x[i][j], x[i][j], x[i][j]).getRGB();
-                bImage.setRGB(j, i, rgb[i][j]);
-            }
-        }
-        return (new ImagePlus(component, bImage));
-    }
-
-    // Pro vytvoření modelu jedné komponenty Y Cb Cr z pole Matrix
-    public ImagePlus setImageFromRGB(int width, int height, Matrix x,
-                                     String component) {
-        BufferedImage bImage = new BufferedImage(width, height,
-                BufferedImage.TYPE_INT_RGB);
-        int[][] rgb = new int[height][width];
-        // x.print(8, 2);
-        //if (afterTransform == false) {
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-
-                rgb[i][j] = new Color((int) x.get(i, j), (int) x.get(i, j),
-                        (int) x.get(i, j)).getRGB();
-                bImage.setRGB(j, i, rgb[i][j]);
-            }
-        }
-        return (new ImagePlus(component, bImage));
-    }
-
 
     public void convertRgbToYcbcr() {
         for (int i = 0; i < this.imageHeightOrig; i++) {
@@ -199,26 +141,4 @@ public class ColorTransform {
         return (newMatrix);
 
     }
-
-    //zaokruhlenie hodnot podla tabulky
-    public Matrix quantization(Matrix qMat, Matrix input) {
-        Matrix res = new Matrix(input.getRowDimension(), input.getColumnDimension());
-        for (int i = 0; i < input.getRowDimension(); i++) {
-            for (int j = 0; j < input.getColumnDimension(); j++) {
-                res.set(i, j, (int) (input.get(i, j) / qMat.get(i, j)));
-            }
-        }
-        return res;
-    }
-
-    public Matrix inverseQuantization(Matrix qMat, Matrix input) {
-        Matrix res = new Matrix(input.getRowDimension(), input.getColumnDimension());
-        for (int i = 0; i < input.getRowDimension(); i++) {
-            for (int j = 0; j < input.getColumnDimension(); j++) {
-                res.set(i, j, (int) (input.get(i, j) * qMat.get(i, j)));
-            }
-        }
-        return res;
-    }
-
 }

@@ -2,8 +2,6 @@ package projekt;
 
 import Jama.Matrix;
 
-import java.util.ArrayList;
-
 public class TransformMatrix {
     public Matrix getDctMatrix (int size) {
         Matrix dctMatrix = new Matrix(size, size);

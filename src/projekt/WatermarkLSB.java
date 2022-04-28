@@ -13,8 +13,6 @@ public class WatermarkLSB {
     private int watermarkHeight;
     private int watermarkWidth;
 
-    private BufferedImage origWithWatermarkImage;
-
     private BufferedImage rotatedImage;
 
     private int[][] red;
@@ -25,17 +23,6 @@ public class WatermarkLSB {
 
     public static final int BLACK = 0;
     public static final int WHITE = 1;
-
-
-    public BufferedImage getRotatedImage() {
-        return rotatedImage;
-    }
-
-    public void setRotatedImage(BufferedImage rotatedImage) {
-        this.rotatedImage = rotatedImage;
-    }
-
-
 
     public WatermarkLSB(BufferedImage originalImage, BufferedImage watermarkImage, String selection) {
         this.imageHeight = originalImage.getHeight();
@@ -252,8 +239,8 @@ public class WatermarkLSB {
             newWidth = (int) Math.floor(width*cos + height*sin);
             newHeight = (int) Math.floor(height*cos + width*sin);
         } else {
-            newWidth = (int) this.imageWidth;
-            newHeight = (int) this.imageHeight;
+            newWidth = this.imageWidth;
+            newHeight = this.imageHeight;
         }
 
         System.out.println("new W:"+newWidth+", new H"+newHeight);
